@@ -81,13 +81,34 @@ export default function Home() {
 
     // Обработчик удаления чата
     const handleDeleteChat = async (chatId) => {
-        if (window.confirm('Вы уверены, что хотите удалить этот чат?')) {
-            await deleteChat(chatId)
-            if (chatId === currentChatId) {
-                // Сбрасываем текущий чат после удаления
-                selectChat(null)
+        setChatToDelete({ id: chatId });
+        setDeleteModalOpen(true);
+    }
+
+    // Обработчик подтверждения удаления чата
+    const confirmDeleteChat = async () => {
+        if (chatToDelete && chatToDelete.id) {
+            try {
+                await deleteChat(chatToDelete.id);
+                
+                // Если удален текущий чат, сбрасываем выбор
+                if (chatToDelete.id === currentChatId) {
+                    // Сбрасываем текущий чат после удаления
+                    useChatStore.getState().selectChat(null);
+                }
+                
+                setDeleteModalOpen(false);
+                setChatToDelete(null);
+            } catch (error) {
+                console.error("Ошибка при удалении чата:", error);
             }
         }
+    }
+
+    // Обработчик отмены удаления чата
+    const cancelDeleteChat = () => {
+        setDeleteModalOpen(false);
+        setChatToDelete(null);
     }
 
     // Обработчик изменения модели
@@ -158,9 +179,9 @@ export default function Home() {
             
             <DeleteChatModal
                 isOpen={deleteModalOpen}
-                onClose={() => setDeleteModalOpen(false)}
-                onConfirm={() => {}}
-                chatTitle={chatToDelete?.title}
+                onClose={cancelDeleteChat}
+                onConfirm={confirmDeleteChat}
+                chatTitle={chatToDelete?.title || "этот чат"}
             />
         </>
     )
