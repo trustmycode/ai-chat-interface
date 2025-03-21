@@ -20,7 +20,7 @@ export default function ChatInput({ value, onChange, onSend, disabled, isSending
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative w-[85%] mx-auto">
+    <form onSubmit={handleSubmit} className="relative">
       <div className="flex items-end border-0 rounded-lg bg-transparent shadow-none">
         <textarea
           value={message}
@@ -30,10 +30,10 @@ export default function ChatInput({ value, onChange, onSend, disabled, isSending
           }}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          rows="3"
+          rows="1"
           className="flex-1 px-4 py-3 bg-transparent border-0 resize-none focus:ring-0 focus:outline-none text-gray-100 placeholder-gray-400"
           placeholder="Введите сообщение..."
-          style={{ minHeight: '68px', maxHeight: '240px' }}
+          style={{ minHeight: '56px', maxHeight: '200px' }}
         />
         <button
           type="submit"
