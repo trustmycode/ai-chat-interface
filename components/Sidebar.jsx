@@ -4,9 +4,21 @@ import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import DeleteChatModal from './DeleteChatModal';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { 
+    TrashIcon, 
+    ChevronLeftIcon, 
+    PlusIcon
+} from '@heroicons/react/24/outline';
 
-export default function Sidebar({ chats = [], currentChatId, onSelectChat, onNewChat, onDeleteChat, onOpenSettings }) {
+export default function Sidebar({ 
+    chats = [], 
+    currentChatId, 
+    onSelectChat, 
+    onNewChat, 
+    onDeleteChat, 
+    onOpenSettings,
+    onCollapse
+}) {
     const { data: session } = useSession();
     const router = useRouter();
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -38,17 +50,30 @@ export default function Sidebar({ chats = [], currentChatId, onSelectChat, onNew
     return (
         <>
             <div className="fixed inset-y-0 left-0 sidebar-bg border-r border-gray-800 z-40 w-64 h-screen">
-                <div className="flex flex-col h-full p-2">
-                    <div className="flex items-center justify-between p-4 border-b border-gray-800">
-                        <button
-                            onClick={onNewChat}
-                            className="w-full py-2 px-3 border border-gray-700 rounded-md bg-gray-800 text-gray-200 hover:bg-gray-700 transition-colors"
-                        >
-                            Новый чат
-                        </button>
+                <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between p-3 border-b border-gray-800">
+                        <div className="text-gray-200 font-medium">Чаты</div>
+                        
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={onCollapse}
+                                className="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-gray-300"
+                                title="Скрыть список чатов"
+                            >
+                                <ChevronLeftIcon className="h-5 w-5" />
+                            </button>
+                            
+                            <button
+                                onClick={onNewChat}
+                                className="p-2 rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600"
+                                title="Новый чат"
+                            >
+                                <PlusIcon className="h-5 w-5" />
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="overflow-y-auto flex-1 mt-1">
+                    <div className="overflow-y-auto flex-1 p-2">
                         {chats.length === 0 ? (
                             <div className="text-center text-gray-400 mt-4 px-2 text-sm">
                                 Нет активных чатов.<br />
@@ -78,19 +103,17 @@ export default function Sidebar({ chats = [], currentChatId, onSelectChat, onNew
                                         className="ml-1 p-1 text-gray-400 hover:text-red-400 rounded-full hover:bg-gray-700"
                                         title="Удалить чат"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
+                                        <TrashIcon className="h-4 w-4" />
                                     </button>
                                 </div>
                             ))
                         )}
                     </div>
 
-                    <div className="mt-auto pt-2 border-t border-gray-700">
+                    <div className="pt-2 border-t border-gray-700 px-2 pb-2">
                         <button
                             onClick={onOpenSettings}
-                            className="flex items-center w-full p-1.5 text-gray-300 rounded-lg hover:bg-gray-700 text-sm"
+                            className="flex items-center w-full p-2 text-gray-300 rounded-md hover:bg-gray-700 text-sm"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path
@@ -103,30 +126,6 @@ export default function Sidebar({ chats = [], currentChatId, onSelectChat, onNew
                             </svg>
                             Настройки
                         </button>
-
-                        <button
-                            onClick={handleSignOut}
-                            className="flex items-center w-full p-1.5 text-red-400 rounded-lg hover:bg-red-900/20 text-sm"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                                />
-                            </svg>
-                            Выйти
-                        </button>
-
-                        <div className="flex items-center p-1.5 mt-1 text-gray-300">
-                            <div className="h-5 w-5 rounded-full bg-indigo-800 text-indigo-300 flex items-center justify-center mr-2 text-xs">
-                                {session?.user?.name?.[0] || session?.user?.email?.[0] || 'У'}
-                            </div>
-                            <div className="truncate text-sm">
-                                {session?.user?.name || session?.user?.email || 'Пользователь'}
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
