@@ -107,11 +107,16 @@ const getChatData = (chatId) => {
   const messagesFilePath = getChatMessagesFilePath(chatId);
   
   if (!fs.existsSync(messagesFilePath)) {
-    return null;
+    return [];
   }
   
-  const chatData = fs.readFileSync(messagesFilePath, 'utf8');
-  return JSON.parse(chatData);
+  try {
+    const chatData = fs.readFileSync(messagesFilePath, 'utf8');
+    return JSON.parse(chatData);
+  } catch (error) {
+    console.error('Ошибка при чтении данных чата:', error);
+    return [];
+  }
 };
 
 // Сохранение данных чата
@@ -180,11 +185,10 @@ export default async function handler(req, res) {
     // Если чат не указан, создаем новый
     if (!currentChatId) {
       currentChatId = await createNewChat(userId, model, message);
-      messages = [];
     } else {
       // Получаем существующие сообщения
       const chatData = getChatData(currentChatId);
-      if (chatData) {
+      if (chatData && Array.isArray(chatData)) {
         messages = chatData;
       }
     }
