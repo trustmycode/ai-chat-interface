@@ -149,7 +149,6 @@ export default function Home() {
                 onSelectChat={handleSelectChat}
                 onNewChat={handleNewChat}
                 onDeleteChat={handleDeleteChat}
-                onOpenSettings={openSettings}
             >
                 <div className="relative flex flex-col h-full">
                     <div className="flex-1 overflow-y-auto p-4">
