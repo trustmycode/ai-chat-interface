@@ -156,30 +156,54 @@ export const useChatStore = create((set, get) => ({
 
     deleteChat: async (chatId) => {
         if (!chatId) return;
-        
+
         try {
-            // Удаляем из локального состояния сразу для более быстрого UI
-            set((state) => ({
-                chats: state.chats.filter(chat => chat.id !== chatId),
-                // Если удаляемый чат был текущим, сбрасываем текущий чат
-                currentChatId: state.currentChatId === chatId ? null : state.currentChatId,
-                // Если удаляемый чат был текущим, очищаем сообщения
-                messages: state.currentChatId === chatId ? [] : state.messages
-            }));
-            
-            // Затем делаем API-запрос
+            // Выполняем запрос к API для удаления чата на сервере
             await axios.delete(`/api/chat/${chatId}`);
             
-            // Если у нас не осталось выбранного чата, но есть другие чаты,
-            // выбираем первый из списка
-            const { chats, currentChatId } = get();
-            if (!currentChatId && chats.length > 0) {
-                get().fetchMessages(chats[0].id);
+            // Получаем текущее состояние
+            const state = get();
+            const updatedChats = state.chats.filter(chat => chat.id !== chatId);
+            
+            // Обновляем состояние
+            set({
+                chats: updatedChats,
+                // Если удаляем текущий чат
+                ...(state.currentChatId === chatId 
+                    ? { 
+                        currentChatId: updatedChats.length > 0 ? updatedChats[0].id : null,
+                        messages: updatedChats.length > 0 ? [] : []
+                      } 
+                    : {})
+            });
+            
+            // Если был удален текущий чат и есть другие чаты, загружаем сообщения нового текущего чата
+            const { currentChatId } = get();
+            if (currentChatId && state.currentChatId === chatId) {
+                get().fetchMessages(currentChatId);
             }
+            
         } catch (error) {
             console.error('Ошибка при удалении чата:', error);
-            // В случае ошибки обновляем список чатов с сервера
-            get().fetchChats();
+            // Даже при ошибке удаляем чат из UI
+            const updatedChats = get().chats.filter(chat => chat.id !== chatId);
+            
+            set((state) => ({
+                chats: updatedChats,
+                // Если удаляем текущий чат
+                ...(state.currentChatId === chatId 
+                    ? { 
+                        currentChatId: updatedChats.length > 0 ? updatedChats[0].id : null,
+                        messages: updatedChats.length > 0 ? [] : []
+                      } 
+                    : {})
+            }));
+            
+            // При ошибке тоже пробуем загрузить сообщения нового чата
+            const { currentChatId } = get();
+            if (currentChatId && get().currentChatId === chatId) {
+                get().fetchMessages(currentChatId);
+            }
         }
     }
 }));

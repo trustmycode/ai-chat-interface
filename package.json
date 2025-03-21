@@ -3,19 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next dev",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
+    "start": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next start",
     "lint": "next lint"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^20.11.30",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "anthropic": "^0.0.0",
     "axios": "^1.8.3",
     "bcryptjs": "^3.0.2",
@@ -26,6 +28,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "socket.io-client": "^4.8.1",
     "zustand": "^5.0.3"
   }

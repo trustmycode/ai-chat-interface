@@ -2,84 +2,138 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+@layer base {
+  :root {
+    --foreground-rgb: 0, 0, 0;
+    --background-rgb: 255, 255, 255;
+    --chat-sidebar-bg: #111213;
+    --chat-content-bg: #2f3237;
+    --chat-input-bg: #5e636e;
+  }
 }
 
-/* Базовые стили для темной темы */
-.dark {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
-  color-scheme: dark;
-}
-
-/* Плавный переход при смене темы */
-* {
-  transition-property: color, background-color, border-color;
-  transition-duration: 200ms;
-  transition-timing-function: ease-in-out;
-}
-
+html,
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: rgb(var(--background-rgb));
+  transition: color 0.3s, background 0.3s;
+  height: 100%;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
-/* Стили для scrollbar в темной теме */
-.dark ::-webkit-scrollbar {
-  width: 8px;
+#__next {
+  height: 100%;
 }
 
-.dark ::-webkit-scrollbar-track {
-  background: #1f2937;
+/* Настройки для темной темы */
+.dark {
+  --foreground-rgb: 229, 231, 235;
+  --background-rgb: 17, 17, 18;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 4px;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
-}
-
-/* Стили для scrollbar в светлой теме */
+/* Стили для скроллбара в светлой теме */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #c0c0c0;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #a0a0a0;
 }
 
-/* Стили для модальных окон */
+/* Стили для скроллбара в темной теме */
+.dark ::-webkit-scrollbar-track {
+  background: #1e1e20;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3a3a3d;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4f;
+}
+
+/* Модальный оверлей */
 .modal-overlay {
-  backdrop-filter: blur(2px);
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
 }
 
-/* Анимации для элементов интерфейса */
+/* Анимации для UI элементов */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-.animate-fadein {
+.animate-fadeIn {
   animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Кастомные классы для темной темы */
+.dark .sidebar-bg {
+  background-color: #111111;
+}
+
+.dark .chat-bg {
+  background-color: #1a1a1c;
+}
+
+.dark .input-bg {
+  background-color: #212124;
+  border-color: #333337;
+}
+
+.dark .message-ai {
+  background-color: #1e1e20;
+}
+
+.dark .message-user {
+  background-color: #1e293b;
+}
+
+/* Глобальные стили */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Кастомные классы */
+.sidebar-bg {
+  background-color: var(--chat-sidebar-bg);
+}
+
+.content-bg {
+  background-color: var(--chat-content-bg);
+}
+
+.input-bg {
+  background-color: var(--chat-input-bg);
 }
