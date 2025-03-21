@@ -91,11 +91,8 @@ export default function Home() {
             try {
                 await deleteChat(chatToDelete.id);
                 
-                // Если удален текущий чат, сбрасываем выбор
-                if (chatToDelete.id === currentChatId) {
-                    // Сбрасываем текущий чат после удаления
-                    useChatStore.getState().selectChat(null);
-                }
+                // Если удален текущий чат, ничего дополнительно делать не нужно
+                // Хранилище useChatStore в функции deleteChat уже все обработает
                 
                 setDeleteModalOpen(false);
                 setChatToDelete(null);
