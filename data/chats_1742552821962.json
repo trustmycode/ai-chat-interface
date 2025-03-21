@@ -1,18 +1,10 @@
 [
   {
-    "id": "1742566588049",
+    "id": "1742568335483",
     "title": "Новый чат",
-    "model": "gpt-4o",
-    "createdAt": "2025-03-21T14:16:28.049Z",
-    "updatedAt": "2025-03-21T14:16:28.049Z",
-    "messagesCount": 0
-  },
-  {
-    "id": "1742566584557",
-    "title": "Новый чат",
-    "model": "gpt-4o",
-    "createdAt": "2025-03-21T14:16:24.557Z",
-    "updatedAt": "2025-03-21T14:16:24.557Z",
+    "model": "claude-3-sonnet-20240229",
+    "createdAt": "2025-03-21T14:45:35.483Z",
+    "updatedAt": "2025-03-21T14:45:35.483Z",
     "messagesCount": 0
   }
 ]

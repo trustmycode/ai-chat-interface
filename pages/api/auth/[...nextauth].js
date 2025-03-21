@@ -77,4 +77,4 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production'
 };
 
-export default NextAuth(authOptions); 
+export default NextAuth(authOptions);

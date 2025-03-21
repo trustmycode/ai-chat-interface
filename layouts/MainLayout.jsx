@@ -1,25 +1,20 @@
 // layouts/MainLayout.jsx
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import { useSession } from 'next-auth/react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
-export default function MainLayout({ children }) {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const isMobile = useMediaQuery('(max-width: 768px)');
-
-    useEffect(() => {
-        if (!isMobile) {
-            setSidebarOpen(true);
-        } else {
-            setSidebarOpen(false);
-        }
-    }, [isMobile]);
-
-    const toggleSidebar = () => {
-        setSidebarOpen(!sidebarOpen);
-    };
+export default function MainLayout({ 
+    children, 
+    chats = [], 
+    currentChatId, 
+    onSelectChat, 
+    onNewChat, 
+    onDeleteChat,
+}) {
+    const { data: session, status } = useSession();
 
     return (
         <>
@@ -30,21 +25,22 @@ export default function MainLayout({ children }) {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <div className="flex h-screen bg-gray-50">
-                <Sidebar
-                    isOpen={sidebarOpen}
-                    onClose={() => isMobile && setSidebarOpen(false)}
-                />
-
-                <div className="flex flex-col flex-1 h-screen overflow-hidden">
-                    <Header
-                        onMenuClick={toggleSidebar}
-                        showMenuButton={isMobile}
+            <div className="flex h-screen overflow-hidden bg-white text-gray-800 transition-colors duration-300">
+                <div className="w-64 h-full flex-shrink-0">
+                    <Sidebar
+                        chats={chats}
+                        currentChatId={currentChatId}
+                        onSelectChat={onSelectChat}
+                        onNewChat={onNewChat}
+                        onDeleteChat={onDeleteChat}
                     />
-
-                    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-white">
+                </div>
+                
+                <div className="flex flex-col flex-1 h-full overflow-hidden">
+                    <Header currentChatId={currentChatId} />
+                    <div className="flex-1 overflow-y-auto content-bg">
                         {children}
-                    </main>
+                    </div>
                 </div>
             </div>
         </>

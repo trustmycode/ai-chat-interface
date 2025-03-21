@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
 import { useSession } from 'next-auth/react'
 import Sidebar from '../components/Sidebar'
 import ChatMessages from '../components/ChatMessages'
-import MessageInput from '../components/MessageInput'
 import Header from '../components/Header'
 import SettingsModal from '../components/SettingsModal'
 import { useChatStore } from '../store/chatStore'
 import DeleteChatModal from '../components/DeleteChatModal'
+import Head from 'next/head'
+import MainLayout from '../layouts/MainLayout'
+import ChatInput from '../components/ChatInput'
 
 export default function Home() {
     const { data: session, status } = useSession()
@@ -15,6 +17,8 @@ export default function Home() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [chatToDelete, setChatToDelete] = useState(null)
+    const [isSending, setIsSending] = useState(false)
+    const [inputValue, setInputValue] = useState('')
 
     const { 
         chats, 
@@ -27,7 +31,8 @@ export default function Home() {
         sendMessage,
         selectedModel,
         setSelectedModel,
-        deleteChat
+        deleteChat,
+        selectChat
     } = useChatStore()
 
     // Перенаправление на страницу входа, если пользователь не аутентифицирован
@@ -51,7 +56,22 @@ export default function Home() {
 
     // Обработчик отправки сообщения
     const handleSendMessage = async (message) => {
-        await sendMessage(message)
+        if (!message.trim() || isSending) return
+        
+        try {
+            setIsSending(true)
+            setInputValue('')
+            
+            if (!currentChatId) {
+                await createChat("Новый чат")
+            }
+            
+            await sendMessage(message)
+        } catch (error) {
+            console.error("Ошибка при отправке сообщения:", error)
+        } finally {
+            setIsSending(false)
+        }
     }
 
     // Обработчик выбора чата
@@ -60,30 +80,14 @@ export default function Home() {
     }
 
     // Обработчик удаления чата
-    const handleDeleteChat = (chatId) => {
-        const chat = chats.find(c => c.id === chatId)
-        setChatToDelete({ id: chatId, title: chat?.title || 'Этот чат' })
-        setDeleteModalOpen(true)
-    }
-
-    // Подтверждение удаления чата
-    const confirmDeleteChat = () => {
-        if (chatToDelete && chatToDelete.id) {
-            deleteChat(chatToDelete.id)
-            setDeleteModalOpen(false)
-            setChatToDelete(null)
-            
-            // Перезагружаем чаты после удаления
-            setTimeout(() => {
-                fetchChats()
-            }, 300)
+    const handleDeleteChat = async (chatId) => {
+        if (window.confirm('Вы уверены, что хотите удалить этот чат?')) {
+            await deleteChat(chatId)
+            if (chatId === currentChatId) {
+                // Сбрасываем текущий чат после удаления
+                selectChat(null)
+            }
         }
-    }
-
-    // Отмена удаления чата
-    const cancelDeleteChat = () => {
-        setDeleteModalOpen(false)
-        setChatToDelete(null)
     }
 
     // Обработчик изменения модели
@@ -107,44 +111,45 @@ export default function Home() {
     // Показываем состояние загрузки или страницу входа
     if (status === 'loading' || status === 'unauthenticated') {
         return (
-            <div className="flex h-screen items-center justify-center bg-white dark:bg-gray-900">
-                <div className="animate-pulse text-xl text-gray-800 dark:text-gray-200">Загрузка...</div>
+            <div className="flex h-screen items-center justify-center content-bg">
+                <div className="animate-pulse text-xl text-gray-200">Загрузка...</div>
             </div>
         )
     }
 
     return (
-        <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
-            <Sidebar 
-                chats={chats} 
+        <>
+            <Head>
+                <title>AI Чат</title>
+                <meta name="description" content="Чат-интерфейс с искусственным интеллектом" />
+                <link rel="icon" href="/favicon.ico" />
+            </Head>
+
+            <MainLayout
+                chats={chats}
                 currentChatId={currentChatId}
                 onSelectChat={handleSelectChat}
                 onNewChat={handleNewChat}
                 onDeleteChat={handleDeleteChat}
-                onOpenSettings={openSettings}
-            />
-            
-            <div className="flex flex-col flex-1 h-full overflow-hidden">
-                <Header 
-                    currentChatId={currentChatId}
-                    selectedModel={selectedModel}
-                    onModelChange={handleModelChange}
-                />
-                
-                <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
-                    <ChatMessages 
-                        messages={messages} 
-                        isLoading={isLoading} 
-                    />
+            >
+                <div className="relative flex flex-col h-full">
+                    <div className="flex-1 overflow-y-auto p-4">
+                        <ChatMessages messages={messages} loading={isLoading || isSending} />
+                    </div>
+                    
+                    <div className="p-4 border-t border-gray-700">
+                        <div className="input-bg rounded-lg">
+                            <ChatInput 
+                                value={inputValue}
+                                onChange={setInputValue}
+                                onSend={handleSendMessage}
+                                disabled={isSending || isLoading}
+                                isSending={isSending}
+                            />
+                        </div>
+                    </div>
                 </div>
-                
-                <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
-                    <MessageInput 
-                        onSendMessage={handleSendMessage} 
-                        isLoading={isLoading} 
-                    />
-                </div>
-            </div>
+            </MainLayout>
             
             <SettingsModal 
                 isOpen={isSettingsOpen}
@@ -153,10 +158,10 @@ export default function Home() {
             
             <DeleteChatModal
                 isOpen={deleteModalOpen}
-                onClose={cancelDeleteChat}
-                onConfirm={confirmDeleteChat}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={() => {}}
                 chatTitle={chatToDelete?.title}
             />
-        </div>
+        </>
     )
 }

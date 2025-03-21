@@ -1,52 +1,51 @@
 // components/ChatMessages.jsx
-import { useEffect, useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-export default function ChatMessages({ messages = [], isLoading }) {
-    const messagesEndRef = useRef(null);
-
-    // Автоматическая прокрутка вниз при добавлении сообщений
+export default function ChatMessages({ messages = [], loading = false }) {
+    const messageEndRef = useRef(null);
+    const [containerHeight, setContainerHeight] = useState(0);
+    
     useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [messages]);
+        messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages, loading]);
 
-    // Форматирование даты сообщения
-    const formatMessageTime = (timestamp) => {
-        if (!timestamp) return '';
-        
-        const date = new Date(timestamp);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
-
-    // Если нет сообщений, показываем приветственное сообщение
+    // Если сообщений нет, показываем приветственное сообщение
     if (messages.length === 0) {
         return (
-            <div className="max-w-4xl mx-auto space-y-6">
-                <div className="text-center py-10">
-                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Начните новую беседу с искусственным интеллектом
-                    </h3>
-                    <p className="text-gray-500 dark:text-gray-400 mb-4">
-                        Задайте вопрос или начните разговор, и ИИ поможет вам в решении задач
+            <div className="max-w-4xl mx-auto h-full flex items-center justify-center">
+                <div className="text-center space-y-6 max-w-2xl mx-auto px-4">
+                    <h1 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-gray-200">
+                        Добро пожаловать в AI Чат
+                    </h1>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                        Начните разговор с искусственным интеллектом. Вы можете спросить о чем угодно!
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
-                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800/50">
-                            <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">Примеры запросов:</p>
-                            <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
-                                <li>Напиши короткое стихотворение о звездах</li>
-                                <li>Как приготовить борщ?</li>
-                                <li>Что такое квантовая механика?</li>
-                            </ul>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                            <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Простой вопрос</h3>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                "Что такое квантовая физика?"
+                            </p>
                         </div>
-                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800/50">
-                            <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">Возможности:</p>
-                            <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
-                                <li>Отвечает на вопросы</li>
-                                <li>Помогает с текстами</li>
-                                <li>Объясняет сложные темы</li>
-                            </ul>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                            <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Помощь с кодом</h3>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                "Напиши функцию сортировки массива на JavaScript"
+                            </p>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                            <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Творческая задача</h3>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                "Сочини стихотворение о природе"
+                            </p>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                            <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Перевод текста</h3>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                "Переведи на английский: Искусственный интеллект меняет мир"
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -55,78 +54,80 @@ export default function ChatMessages({ messages = [], isLoading }) {
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
-            {messages.map((message, index) => (
-                <div
-                    key={index}
-                    className={`flex ${
-                        message.role === 'user' ? 'justify-end' : 'justify-start'
-                    }`}
-                >
-                    <div
-                        className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 ${
-                            message.role === 'user'
-                                ? 'bg-blue-500 dark:bg-blue-600 text-white rounded-tr-none'
-                                : message.isError
-                                ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-tl-none border border-red-100 dark:border-red-900/50'
-                                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none'
-                        }`}
-                    >
-                        <div className="flex items-start">
-                            {message.role === 'assistant' && (
-                                <div className="flex-shrink-0 mr-3">
-                                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                                        <svg className="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714a2.25 2.25 0 01-.659 1.591L9.5 14.5m3.25-11.396c.386.198.824.307 1.25.307M12 3.75h.006a2.25 2.25 0 012.244 2.077L14.5 14.5m-6-11.25C7.635 2.806 7.25 2.55 7 2.25c-.25.3-.635.556-1.5 1"
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
-                            )}
-                            <div className="flex-1">
-                                <div className="prose prose-sm max-w-none">
-                                    <ReactMarkdown>{message.content}</ReactMarkdown>
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1 text-right">
-                                    {formatMessageTime(message.timestamp)}
+        <div className="relative min-h-[200px]">
+            <div className="space-y-4">
+                {messages.length === 0 && !loading ? (
+                    <div className="text-center py-8">
+                        <div className="inline-block p-4 rounded-lg bg-gray-800 text-gray-200 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <p className="text-sm font-medium">Начните новый разговор</p>
+                        </div>
+                        <p className="text-gray-300 text-sm">Введите сообщение ниже, чтобы начать общение с ИИ</p>
+                    </div>
+                ) : (
+                    <>
+                        {messages.map((message, index) => (
+                            <div key={message.id || index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[85%] md:max-w-[75%] px-4 py-3 rounded-lg ${
+                                    message.role === 'user' 
+                                        ? 'bg-blue-600 text-white' 
+                                        : 'bg-gray-700 text-gray-100'
+                                }`}>
+                                    <ReactMarkdown 
+                                        remarkPlugins={[remarkGfm]}
+                                        components={{
+                                            pre: ({node, ...props}) => (
+                                                <div className="overflow-auto my-2 bg-gray-800 p-2 rounded">
+                                                    <pre {...props} />
+                                                </div>
+                                            ),
+                                            code: ({node, inline, className, children, ...props}) => {
+                                                if (inline) {
+                                                    return <code className="bg-gray-800 px-1 py-0.5 rounded text-gray-200" {...props}>{children}</code>
+                                                }
+                                                return (
+                                                    <code className={`${className} block`} {...props}>
+                                                        {children}
+                                                    </code>
+                                                )
+                                            },
+                                            p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                            ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-2" {...props} />,
+                                            ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-2" {...props} />,
+                                            li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                                            a: ({node, ...props}) => <a className="text-blue-300 underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                                            blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-500 pl-3 my-2 text-gray-300" {...props} />,
+                                            h1: ({node, ...props}) => <h1 className="text-xl font-bold my-2" {...props} />,
+                                            h2: ({node, ...props}) => <h2 className="text-lg font-bold my-2" {...props} />,
+                                            h3: ({node, ...props}) => <h3 className="text-md font-bold my-2" {...props} />,
+                                            table: ({node, ...props}) => <div className="overflow-auto my-2"><table className="border-collapse" {...props} /></div>,
+                                            th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800" {...props} />,
+                                            td: ({node, ...props}) => <td className="border border-gray-600 px-2 py-1" {...props} />
+                                        }}
+                                    >
+                                        {message.content}
+                                    </ReactMarkdown>
                                 </div>
                             </div>
-                            {message.role === 'user' && (
-                                <div className="flex-shrink-0 ml-3">
-                                    <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center">
-                                        <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                            />
-                                        </svg>
+                        ))}
+                        
+                        {loading && (
+                            <div className="flex justify-start">
+                                <div className="max-w-[85%] md:max-w-[75%] px-4 py-3 rounded-lg bg-gray-700 text-gray-100">
+                                    <div className="flex space-x-2 items-center">
+                                        <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                        <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                        <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            ))}
-
-            {isLoading && (
-                <div className="flex justify-start">
-                    <div className="max-w-[75%] bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-tl-none px-4 py-3 text-gray-800 dark:text-gray-200">
-                        <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-pulse"></div>
-                            <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-pulse delay-75"></div>
-                            <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-pulse delay-150"></div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div ref={messagesEndRef} />
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+            <div ref={messageEndRef} />
         </div>
     );
 }
