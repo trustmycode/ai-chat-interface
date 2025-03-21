@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1742552821962",
+    "name": "Tester Man",
+    "email": "testerman937@gmail.com",
+    "password": "$2b$10$.T.T19I3sDEiD6LItwLgvuPE8EoG0c.vHfD6tssqyUp499wGvr6X6",
+    "createdAt": "2025-03-21T10:27:01.962Z"
+  },
+  {
+    "id": "1742555784271",
+    "name": "Tester Man",
+    "email": "admin@localhost.ru",
+    "password": "$2b$10$pxZ03wqPOffrVC8OEKa.k.Giwq/xYmAN8H3STorNWYGRzB0CEiG3y",
+    "createdAt": "2025-03-21T11:16:24.271Z"
+  }
+]
