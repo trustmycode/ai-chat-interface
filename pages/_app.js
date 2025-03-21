@@ -1,9 +1,9 @@
 // pages/_app.js
 import '../styles/globals.css'
 import { SessionProvider } from 'next-auth/react'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
-export default function App({ Component, pageProps: { session, ...pageProps } }) {
+function MyApp({ Component, pageProps: { session, ...pageProps } }) {
     // Проверяем предпочтения пользователя по теме при загрузке
     useEffect(() => {
         // Проверяем сохраненные настройки
@@ -36,3 +36,5 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
         </SessionProvider>
     )
 }
+
+export default MyApp
