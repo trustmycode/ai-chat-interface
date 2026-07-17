@@ -102,7 +102,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                             >
                                 <option value="russian">Русский</option>
-                                <option value="english">English</option>
+                                <option value="english">Английский</option>
                             </select>
                         </div>
                         
@@ -161,7 +161,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                         <div className="mt-4 pt-3 border-t dark:border-gray-700">
                             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Информация об аккаунте</h3>
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                                <p>Email: {session?.user?.email || 'Не указан'}</p>
+                                <p>Электронная почта: {session?.user?.email || 'Не указана'}</p>
                                 <p>Имя: {session?.user?.name || 'Не указано'}</p>
                             </div>
                         </div>
@@ -186,4 +186,4 @@ export default function SettingsModal({ isOpen, onClose }) {
             </div>
         </div>
     );
-} 
+}

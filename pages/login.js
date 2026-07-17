@@ -52,7 +52,7 @@ export default function Login() {
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
-                Email
+                Электронная почта
               </label>
               <input
                 id="email"
@@ -63,7 +63,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
+                placeholder="Электронная почта"
               />
             </div>
             <div>
@@ -74,6 +74,8 @@ export default function Login() {
                 id="password"
                 name="password"
                 type="password"
+                minLength={12}
+                maxLength={128}
                 autoComplete="current-password"
                 required
                 value={password}
@@ -102,4 +104,4 @@ export default function Login() {
       </div>
     </div>
   );
-} 
+}

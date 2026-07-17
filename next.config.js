@@ -2,25 +2,18 @@
 const nextConfig = {
     reactStrictMode: true,
     poweredByHeader: false,
-    // Ограничение размера статических данных страницы
-    experimental: {
-        largePageDataBytes: 128 * 1000, // 128KB
+    async headers() {
+        return [{
+            source: '/(.*)',
+            headers: [
+                { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'" },
+                { key: 'Referrer-Policy', value: 'no-referrer' },
+                { key: 'X-Content-Type-Options', value: 'nosniff' },
+                { key: 'X-Frame-Options', value: 'DENY' },
+                { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+            ],
+        }];
     },
-    // Оптимизации webpack
-    webpack: (config, { isServer }) => {
-        // Оптимизируем бандл
-        config.optimization.minimize = true;
-        
-        // Увеличиваем лимит размера assets
-        config.performance = {
-            ...config.performance,
-            maxAssetSize: 500000, // 500KB
-            maxEntrypointSize: 500000, // 500KB
-        };
-        
-        return config;
-    },
-    // Отключение генерации source maps в production
     productionBrowserSourceMaps: false,
 }
 
