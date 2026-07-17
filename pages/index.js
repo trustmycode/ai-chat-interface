@@ -1,9 +1,7 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useSession } from 'next-auth/react'
-import Sidebar from '../components/Sidebar'
 import ChatMessages from '../components/ChatMessages'
-import Header from '../components/Header'
 import SettingsModal from '../components/SettingsModal'
 import { useChatStore } from '../store/chatStore'
 import DeleteChatModal from '../components/DeleteChatModal'
@@ -25,14 +23,12 @@ export default function Home() {
         currentChatId, 
         messages, 
         isLoading, 
+        error,
         fetchChats, 
         fetchMessages, 
         createChat, 
         sendMessage,
-        selectedModel,
-        setSelectedModel,
-        deleteChat,
-        selectChat
+        deleteChat
     } = useChatStore()
 
     // Перенаправление на страницу входа, если пользователь не аутентифицирован
@@ -108,11 +104,6 @@ export default function Home() {
         setChatToDelete(null);
     }
 
-    // Обработчик изменения модели
-    const handleModelChange = (modelId) => {
-        setSelectedModel(modelId)
-    }
-
     // Обработчики для модального окна настроек
     const openSettings = () => {
         // Перезагружаем чаты при открытии настроек
@@ -138,7 +129,7 @@ export default function Home() {
     return (
         <>
             <Head>
-                <title>AI Чат</title>
+                <title>Чат с ИИ</title>
                 <meta name="description" content="Чат-интерфейс с искусственным интеллектом" />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
@@ -152,6 +143,11 @@ export default function Home() {
                 onOpenSettings={openSettings}
             >
                 <div className="relative flex flex-col h-full">
+                    {error && (
+                        <div role="alert" className="mx-4 mt-4 rounded-md border border-red-700 bg-red-950/50 px-4 py-3 text-sm text-red-200">
+                            {error}
+                        </div>
+                    )}
                     <div className="flex-1 overflow-y-auto p-4">
                         <ChatMessages messages={messages} loading={isLoading || isSending} />
                     </div>

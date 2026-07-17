@@ -1,10 +1,8 @@
 // layouts/MainLayout.jsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Head from 'next/head';
-import { useSession } from 'next-auth/react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { useMediaQuery } from '../hooks/useMediaQuery';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 
 export default function MainLayout({ 
@@ -16,7 +14,6 @@ export default function MainLayout({
     onDeleteChat,
     onOpenSettings
 }) {
-    const { data: session, status } = useSession();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     
     const toggleSidebar = () => {
@@ -26,7 +23,7 @@ export default function MainLayout({
     return (
         <>
             <Head>
-                <title>AI Бизнес-ассистент</title>
+                <title>Бизнес-ассистент с ИИ</title>
                 <meta name="description" content="Бизнес-ассистент на базе искусственного интеллекта" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" href="/favicon.ico" />

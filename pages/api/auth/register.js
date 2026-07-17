@@ -1,78 +1,40 @@
 import bcrypt from 'bcryptjs';
-import fs from 'fs';
-import path from 'path';
+import { createUser } from '../../../lib/fileStore';
+import { checkRateLimit } from '../../../lib/rateLimit';
+import { cleanText, normalizeEmail, validatePassword, ValidationError } from '../../../lib/validation';
 
-// В реальном приложении нужна база данных
-// Для демо-версии будем хранить пользователей в JSON файле
-const usersFilePath = path.join(process.cwd(), 'data/users.json');
-
-// Проверяем и создаем директорию data, если она не существует
-const ensureDirectory = () => {
-  const dataDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  
-  // Создаем файл пользователей, если он не существует
-  if (!fs.existsSync(usersFilePath)) {
-    fs.writeFileSync(usersFilePath, JSON.stringify([], null, 2));
-  }
-};
-
-// Получение списка пользователей
-const getUsers = () => {
-  ensureDirectory();
-  const usersData = fs.readFileSync(usersFilePath, 'utf8');
-  return JSON.parse(usersData);
-};
-
-// Сохранение списка пользователей
-const saveUsers = (users) => {
-  fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
-};
+export const config = { api: { bodyParser: { sizeLimit: '16kb' } } };
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Метод не разрешен' });
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({ message: 'Метод не разрешён' });
+  }
+
+  const address = req.socket.remoteAddress || 'unknown';
+  const rate = checkRateLimit(`register:${address}`, { limit: 5, windowMs: 15 * 60 * 1000 });
+  if (!rate.allowed) {
+    res.setHeader('Retry-After', String(rate.retryAfterSeconds));
+    return res.status(429).json({ message: 'Слишком много попыток. Повторите позже.' });
   }
 
   try {
-    const { name, email, password } = req.body;
-
-    // Проверка обязательных полей
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Все поля обязательны для заполнения' });
-    }
-
-    // Получаем текущих пользователей
-    const users = getUsers();
-
-    // Проверяем, существует ли пользователь с таким email
-    if (users.some(user => user.email === email)) {
-      return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
-    }
-
-    // Хешируем пароль
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Создаем нового пользователя
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      password: hashedPassword,
-      createdAt: new Date().toISOString()
-    };
-
-    // Добавляем пользователя в список
-    users.push(newUser);
-    saveUsers(users);
-
-    // Возвращаем успешный ответ без пароля
-    const { password: _, ...userWithoutPassword } = newUser;
-    res.status(201).json(userWithoutPassword);
+    const name = cleanText(req.body?.name, { field: 'Имя', min: 2, max: 80 });
+    const email = normalizeEmail(req.body?.email);
+    const password = validatePassword(req.body?.password);
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const user = await createUser({ name, email, password: hashedPassword });
+    const { password: _, ...safeUser } = user;
+    return res.status(201).json(safeUser);
   } catch (error) {
-    console.error('Ошибка при регистрации:', error);
-    res.status(500).json({ message: 'Внутренняя ошибка сервера' });
+    if (error instanceof ValidationError) {
+      return res.status(400).json({ message: error.message });
+    }
+    if (error.code === 'DUPLICATE_USER') {
+      return res.status(409).json({ message: 'Пользователь с таким адресом уже существует' });
+    }
+    console.error('Ошибка регистрации', error);
+    return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
   }
-} 
+}
