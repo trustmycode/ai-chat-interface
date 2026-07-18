@@ -1,57 +1,37 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import fs from 'fs';
-import path from 'path';
-
-// Путь к файлу с пользователями
-const usersFilePath = path.join(process.cwd(), 'data/users.json');
-
-// Получение списка пользователей
-const getUsers = () => {
-  try {
-    const usersData = fs.readFileSync(usersFilePath, 'utf8');
-    return JSON.parse(usersData);
-  } catch (error) {
-    console.error('Ошибка при чтении файла пользователей:', error);
-    return [];
-  }
-};
+import { findUserByEmail } from '../../../lib/fileStore';
+import { checkRateLimit } from '../../../lib/rateLimit';
+import { hasSessionSecret } from '../../../lib/sessionSecret';
+import { normalizeEmail, validatePassword } from '../../../lib/validation';
 
 export const authOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: 'Пароль',
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        email: { label: 'Адрес почты', type: 'email' },
+        password: { label: 'Пароль', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        try {
+          const email = normalizeEmail(credentials?.email);
+          const password = validatePassword(credentials?.password);
+          const rate = checkRateLimit(`login:${email}`, { limit: 10, windowMs: 15 * 60 * 1000 });
+          if (!rate.allowed) return null;
 
-        // Получаем пользователей из файла
-        const users = getUsers();
-        
-        // Ищем пользователя с нужным email
-        const user = users.find(user => user.email === credentials.email);
-        
-        // Если пользователь не найден или пароль неверный
-        if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
+          const user = await findUserByEmail(email);
+          if (!user || !(await bcrypt.compare(password, user.password))) return null;
+          const { password: _, ...safeUser } = user;
+          return safeUser;
+        } catch {
           return null;
         }
-        
-        // Возвращаем информацию о пользователе без пароля
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      }
-    })
+      },
+    }),
   ],
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 дней
-  },
+  session: { strategy: 'jwt', maxAge: 24 * 60 * 60 },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -62,19 +42,24 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (token) {
+      if (session.user && token) {
         session.user.id = token.id;
         session.user.name = token.name;
         session.user.email = token.email;
       }
       return session;
-    }
+    },
   },
-  pages: {
-    signIn: '/login',
-    error: '/login',
-  },
-  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production'
+  pages: { signIn: '/login', error: '/login' },
+  secret: process.env.NEXTAUTH_SECRET,
+  useSecureCookies: process.env.NODE_ENV === 'production',
 };
 
-export default NextAuth(authOptions);
+const nextAuthHandler = NextAuth(authOptions);
+
+export default async function handler(req, res) {
+  if (!hasSessionSecret()) {
+    return res.status(503).json({ message: 'Секрет сеансов не настроен' });
+  }
+  return nextAuthHandler(req, res);
+}

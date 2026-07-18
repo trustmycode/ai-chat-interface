@@ -69,7 +69,7 @@ export default function Register() {
             </div>
             <div>
               <label htmlFor="email" className="sr-only">
-                Email
+                Электронная почта
               </label>
               <input
                 id="email"
@@ -80,7 +80,7 @@ export default function Register() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
+                placeholder="Электронная почта"
               />
             </div>
             <div>
@@ -91,6 +91,8 @@ export default function Register() {
                 id="password"
                 name="password"
                 type="password"
+                minLength={12}
+                maxLength={128}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -106,6 +108,8 @@ export default function Register() {
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
+                minLength={12}
+                maxLength={128}
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -133,4 +137,4 @@ export default function Register() {
       </div>
     </div>
   );
-} 
+}

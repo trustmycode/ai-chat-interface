@@ -1,8 +1,6 @@
 // components/Sidebar.jsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
 import DeleteChatModal from './DeleteChatModal';
 import { 
     TrashIcon, 
@@ -20,7 +18,6 @@ export default function Sidebar({
     onCollapse
 }) {
     const { data: session } = useSession();
-    const router = useRouter();
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [chatToDelete, setChatToDelete] = useState(null);
 
@@ -140,4 +137,3 @@ export default function Sidebar({
         </>
     );
 }
-

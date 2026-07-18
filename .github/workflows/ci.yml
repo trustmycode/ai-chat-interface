@@ -1,0 +1,45 @@
+name: Проверка
+
+on:
+  push:
+    branches: [master, 'agent/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  application:
+    name: Тесты и сборка
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получение исходного кода
+        uses: actions/checkout@v4
+
+      - name: Настройка Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Чистая установка зависимостей
+        run: npm ci
+
+      - name: Модульные проверки
+        run: npm test
+
+      - name: Производственная сборка
+        env:
+          NEXTAUTH_URL: http://127.0.0.1:3000
+          NEXTAUTH_SECRET: test-only-secret-with-at-least-32-characters
+        run: npm run build
+
+  container:
+    name: Сборка контейнера
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получение исходного кода
+        uses: actions/checkout@v4
+
+      - name: Сборка образа
+        run: docker build --tag ai-chat-interface:test .
